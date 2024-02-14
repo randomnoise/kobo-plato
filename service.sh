@@ -23,6 +23,10 @@ fi
 CMD=$1
 shift
 
+echo
+echo "Incoming parameters to service.sh script: \""$@"\"";
+echo
+
 case "$CMD" in
 	run_emulator)
 		cargo run -p emulator "$@"

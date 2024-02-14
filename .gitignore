@@ -5,6 +5,7 @@
 /resources
 /libs
 /bin
+/bin-backup
 /Settings.toml
 /.metadata.json
 /.reading-states
