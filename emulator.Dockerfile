@@ -34,3 +34,17 @@ ENV CARGO_TARGET_OS=linux
 WORKDIR /usr/src/plato
 
 # CMD ["bash", "-c", "cd /plato/src/mupdf_wrapper && ./build.sh && cd /plato/ && cargo test && cargo build --all-features"]
+
+FROM emulator AS emulator-dev
+
+RUN apt-get update \
+ && apt-get install --no-install-recommends --yes \
+    libfreetype6 \
+    libgl1-mesa-dri \
+    libgl1-mesa-glx \
+    libopenal1 \
+    libsdl2-2.0-0 \
+    strace \
+    ltrace \
+ && rm --recursive --force /var/lib/apt/lists/*
+
