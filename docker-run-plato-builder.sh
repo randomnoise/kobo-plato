@@ -1,4 +1,4 @@
 #!/bin/sh
 docker run --rm -it \
-           --volume $(pwd):/usr/src/plato \
+           --volume $(pwd)/dist:/usr/src/plato/dist \
            local-plato-builder:latest
