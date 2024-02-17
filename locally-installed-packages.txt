@@ -1,1 +1,0 @@
-libsdl2-dev libmupdf-dev libgumbo-dev libharfbuzz-dev libjbig2dec0-dev libdjvulibre-dev libjpeg-dev libopenjp2-7-dev
