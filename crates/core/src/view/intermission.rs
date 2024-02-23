@@ -7,7 +7,7 @@ use super::{View, Event, Hub, Bus, Id, ID_FEEDER, RenderQueue};
 use crate::framebuffer::Framebuffer;
 use crate::settings::{IntermKind, LOGO_SPECIAL_PATH, COVER_SPECIAL_PATH};
 use crate::metadata::{SortMethod, BookQuery, sort};
-use crate::color::{TEXT_NORMAL, TEXT_INVERTED_HARD};
+use crate::color::TEXT_NORMAL;
 use crate::context::Context;
 
 pub struct Intermission {
@@ -15,7 +15,6 @@ pub struct Intermission {
     rect: Rectangle,
     children: Vec<Box<dyn View>>,
     message: Message,
-    halt: bool,
 }
 
 pub enum Message {
@@ -49,7 +48,6 @@ impl Intermission {
             rect,
             children: Vec::new(),
             message,
-            halt: kind == IntermKind::PowerOff,
         }
     }
 }
@@ -60,11 +58,7 @@ impl View for Intermission {
     }
 
     fn render(&self, fb: &mut dyn Framebuffer, _rect: Rectangle, fonts: &mut Fonts) {
-        let scheme = if self.halt {
-            TEXT_INVERTED_HARD
-        } else {
-            TEXT_NORMAL
-        };
+        let scheme = TEXT_NORMAL;
 
         fb.draw_rectangle(&self.rect, scheme[0]);
 
