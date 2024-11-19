@@ -1,0 +1,49 @@
+name: Plato CI
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  plato-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build Plato
+      run: |
+        set -eux -o pipefail
+        # Check whether the dependencies are installed
+        dpkg-query --show coreutils git jq patch pkg-config tar unzip wget xz-utils
+        # Download Linaro GCC
+        wget -q https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/arm-linux-gnueabihf/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf.tar.xz
+        # checksum is same with the Kobo Reader's toolchain Git LFS file reference:
+        # https://github.com/kobolabs/Kobo-Reader/blob/master/toolchain/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf.tar.xz
+        echo "22914118fd963f953824b58107015c6953b5bbdccbdcf25ad9fd9a2f9f11ac07 gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf.tar.xz" | sha256sum --check -
+        # Extract Linaro GCC
+        tar --extract --xz --file gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf.tar.xz
+        rm --verbose gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf.tar.xz
+        mv --verbose gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabihf/ gcc-linaro/
+        # Add to PATH and then check
+        export PATH=$(pwd)/gcc-linaro/bin:$PATH
+        type arm-linux-gnueabihf-gcc
+        # Prepare Rust
+        rustup update stable
+        rustup default stable
+        rustup target add arm-unknown-linux-gnueabihf
+        rustup target list | grep installed
+        # Run build script
+        bash -c ./build.sh
+        # Print plato's binary file information, to check its kernel version compatibility specifically
+        file target/arm-unknown-linux-gnueabihf/release/plato
