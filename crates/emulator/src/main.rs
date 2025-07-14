@@ -107,26 +107,29 @@ fn code_from_key(key: Scancode) -> Option<ButtonCode> {
     }
 }
 
-struct FBCanvas(WindowCanvas);
+struct FBCanvas {
+    canvas:   WindowCanvas,
+    inverted: bool,
+}
 
 impl Framebuffer for FBCanvas {
     fn set_pixel(&mut self, x: u32, y: u32, color: Color) {
         let [red, green, blue] = color.rgb();
-        self.0.set_draw_color(SdlColor::RGB(red, green, blue));
-        self.0.draw_point(SdlPoint::new(x as i32, y as i32)).unwrap();
+        self.canvas.set_draw_color(SdlColor::RGB(red, green, blue));
+        self.canvas.draw_point(SdlPoint::new(x as i32, y as i32)).unwrap();
     }
 
     fn set_blended_pixel(&mut self, x: u32, y: u32, color: Color, alpha: f32) {
         let [red, green, blue] = color.rgb();
-        self.0.set_draw_color(SdlColor::RGBA(red, green, blue, (alpha * 255.0) as u8));
-        self.0.draw_point(SdlPoint::new(x as i32, y as i32)).unwrap();
+        self.canvas.set_draw_color(SdlColor::RGBA(red, green, blue, (alpha * 255.0) as u8));
+        self.canvas.draw_point(SdlPoint::new(x as i32, y as i32)).unwrap();
     }
 
     fn invert_region(&mut self, rect: &Rectangle) {
         let width = rect.width();
         let s_rect = Some(SdlRect::new(rect.min.x, rect.min.y,
                                        width, rect.height()));
-        if let Ok(data) = self.0.read_pixels(s_rect, PixelFormatEnum::RGB24) {
+        if let Ok(data) = self.canvas.read_pixels(s_rect, PixelFormatEnum::RGB24) {
             for y in rect.min.y..rect.max.y {
                 let v = (y - rect.min.y) as u32;
                 for x in rect.min.x..rect.max.x {
@@ -147,7 +150,7 @@ impl Framebuffer for FBCanvas {
         let width = rect.width();
         let s_rect = Some(SdlRect::new(rect.min.x, rect.min.y,
                                        width, rect.height()));
-        if let Ok(data) = self.0.read_pixels(s_rect, PixelFormatEnum::RGB24) {
+        if let Ok(data) = self.canvas.read_pixels(s_rect, PixelFormatEnum::RGB24) {
             for y in rect.min.y..rect.max.y {
                 let v = (y - rect.min.y) as u32;
                 for x in rect.min.x..rect.max.x {
@@ -165,7 +168,7 @@ impl Framebuffer for FBCanvas {
     }
 
     fn update(&mut self, _rect: &Rectangle, _mode: UpdateMode) -> Result<u32, Error> {
-        self.0.present();
+        self.canvas.present();
         Ok(Local::now().timestamp_subsec_millis())
     }
 
@@ -180,7 +183,7 @@ impl Framebuffer for FBCanvas {
         encoder.set_depth(png::BitDepth::Eight);
         encoder.set_color(png::ColorType::Rgb);
         let mut writer = encoder.write_header().with_context(|| format!("can't write PNG header for {}", path))?;
-        let data = self.0.read_pixels(self.0.viewport(), PixelFormatEnum::RGB24).unwrap_or_default();
+        let data = self.canvas.read_pixels(self.canvas.viewport(), PixelFormatEnum::RGB24).unwrap_or_default();
         writer.write_image_data(&data).with_context(|| format!("can't write PNG data to {}", path))?;
         Ok(())
     }
@@ -194,7 +197,7 @@ impl Framebuffer for FBCanvas {
         if (width < height && n % 2 == 0) || (width > height && n % 2 == 1) {
             mem::swap(&mut width, &mut height);
         }
-        self.0.window_mut().set_size(width, height).ok();
+        self.canvas.window_mut().set_size(width, height).ok();
         Ok((width, height))
     }
 
@@ -205,6 +208,7 @@ impl Framebuffer for FBCanvas {
     }
 
     fn set_inverted(&mut self, _enable: bool) {
+        self.inverted = _enable;
     }
 
     fn monochrome(&self) -> bool {
@@ -216,15 +220,15 @@ impl Framebuffer for FBCanvas {
     }
 
     fn inverted(&self) -> bool {
-        false
+        self.inverted
     }
 
     fn width(&self) -> u32 {
-        self.0.window().size().0
+        self.canvas.window().size().0
     }
 
     fn height(&self) -> u32 {
-        self.0.window().size().1
+        self.canvas.window().size().1
     }
 }
 
@@ -241,7 +245,7 @@ fn main() -> Result<(), Error> {
     let mut fb = window.into_canvas().software().build().unwrap();
     fb.set_blend_mode(BlendMode::Blend);
 
-    let mut context = build_context(Box::new(FBCanvas(fb)))?;
+    let mut context = build_context(Box::new(FBCanvas{canvas: fb, inverted: false}))?;
 
     if context.settings.import.startup_trigger {
         context.batch_import();
@@ -284,6 +288,8 @@ fn main() -> Result<(), Error> {
         context.frontlight.set_warmth(0.0);
         context.frontlight.set_intensity(0.0);
     }
+
+    context.fb.set_inverted(context.settings.inverted);
 
     println!("{} is running on a Kobo {}.", APP_NAME,
                                             CURRENT_DEVICE.model);
@@ -549,6 +555,8 @@ fn main() -> Result<(), Error> {
                 },
                 Event::Select(EntryId::ToggleInverted) => {
                     context.fb.toggle_inverted();
+                    context.fb.invert_region(&context.fb.rect());
+                    context.settings.inverted = context.fb.inverted();
                     rq.add(RenderData::new(view.id(), context.fb.rect(), UpdateMode::Gui));
                 },
                 Event::Select(EntryId::TakeScreenshot) => {
