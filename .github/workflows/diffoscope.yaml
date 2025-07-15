@@ -9,6 +9,7 @@ jobs:
     - name: diffoscope
       run: |
         set -eux -o pipefail
-        dpkg-query --show diffoscope
-        # sudo apt-get update
+        # dpkg-query --show diffoscope
+        # > dpkg-query: no packages found matching diffoscope
+        sudo apt-get update
         # sudo apt-get install --yes --no-install-recommends diffoscope
