@@ -11,5 +11,5 @@ jobs:
         set -eux -o pipefail
         # dpkg-query --show diffoscope
         # > dpkg-query: no packages found matching diffoscope
-        sudo apt-get update
+        sudo apt-get update --quiet
         # sudo apt-get install --yes --no-install-recommends diffoscope
