@@ -1,0 +1,14 @@
+name: diffoscope CI
+
+on: push
+
+jobs:
+  plato-build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: diffoscope
+      run: |
+        set -eux -o pipefail
+        dpkg-query --show diffoscope
+        # sudo apt-get update
+        # sudo apt-get install --yes --no-install-recommends diffoscope
