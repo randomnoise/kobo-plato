@@ -37,3 +37,5 @@ jobs:
         # Print plato's binary file information, to check its kernel version compatibility specifically
         file target/arm-unknown-linux-gnueabihf/release/plato
         strings target/arm-unknown-linux-gnueabihf/release/plato | grep rustc | grep version
+        type cargo wget jq unzip find patchelf arm-linux-gnueabihf-strip
+        bash -c ./dist.sh
