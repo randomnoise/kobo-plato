@@ -1,4 +1,6 @@
-#! /bin/sh
+#!/usr/bin/env bash
+
+set -ex -o pipefail
 
 if [ "$#" -lt 1 ] ; then
 	printf "Usage: %s NICKEL_MENU_ARCHIVE\n" "${0##*/}" >&2
