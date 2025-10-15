@@ -39,3 +39,7 @@ jobs:
         strings target/arm-unknown-linux-gnueabihf/release/plato | grep rustc | grep version
         type cargo wget jq unzip find patchelf arm-linux-gnueabihf-strip
         bash -c ./dist.sh
+        type gzip ln zip tar basename
+        wget -q -O Nickel-Menu-Archive.tgz https://github.com/pgaskin/NickelMenu/releases/download/v0.5.4/KoboRoot.tgz
+        bash -c "./bundle.sh $(pwd)/Nickel-Menu-Archive.tgz"
+        file bundle/plato-bundle-*.zip
