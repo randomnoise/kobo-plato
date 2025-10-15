@@ -28,11 +28,12 @@ jobs:
         export PATH=$(pwd)/gcc-linaro/bin:$PATH
         type arm-linux-gnueabihf-gcc
         # Prepare Rust
-        rustup update stable
-        rustup default stable
+        rustup install 1.82.0
+        rustup default 1.82.0
         rustup target add arm-unknown-linux-gnueabihf
         rustup target list | grep installed
         # Run build script
         bash -c ./build.sh
         # Print plato's binary file information, to check its kernel version compatibility specifically
         file target/arm-unknown-linux-gnueabihf/release/plato
+        strings target/arm-unknown-linux-gnueabihf/release/plato | grep rustc | grep version
