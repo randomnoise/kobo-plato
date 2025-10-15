@@ -43,3 +43,7 @@ jobs:
         wget -q -O Nickel-Menu-Archive.tgz https://github.com/pgaskin/NickelMenu/releases/download/v0.5.4/KoboRoot.tgz
         bash -c "./bundle.sh $(pwd)/Nickel-Menu-Archive.tgz"
         file bundle/plato-bundle-*.zip
+
+    - uses: actions/upload-artifact@v4
+      with:
+        path: bundle/plato-bundle-*.zip
